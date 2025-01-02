@@ -22,11 +22,14 @@ import threading
 from selenium.webdriver.firefox.service import Service
 from ultralytics import YOLO
 from selenium.webdriver.firefox.options import Options
+from googlesearch import search
+from urllib.parse import urlparse
+
 
 st.sidebar.title("Thông tin chi tiết")
 HINTS = ['wp', 'login', 'includes', 'admin', 'content', 'site', 'images', 'js', 'alibaba', 'css', 'myaccount', 'dropbox', 'themes', 'plugins', 'signin', 'view']
 
-allbrand_txt = open("streamlit/allbrands.txt", "r")
+allbrand_txt = open("Detect-URL-phishing/streamlit/allbrands.txt", "r")
 
 def __txt_to_list(txt_object):
     list = []
@@ -1115,7 +1118,7 @@ def static():
             input_dict = [tf.convert_to_tensor([value]) for name, value in  df.items()]
             predictions_static = model_static.predict(input_dict)
             predict_static = predictions_static[0][0]
-            st.sidebar.write(f"Phishing: {predict_static*100}%")
+            st.sidebar.write(f"Phishing score: {predict_static*100:.2f}%")
             for item1, item2 in zip(row, name):
                 st.sidebar.write(f"{item2}: {item1}")
         except:
@@ -1128,10 +1131,10 @@ def static():
 
 def dynamic():
     with st.spinner(f"Đang xử lý Dynamic..."):
+        global predict_dynamic
         predict_dynamic=""
         if state:
             try:
-                time.sleep(1)
                 screenshot = driver.get_screenshot_as_png()
                 image = Image.open(BytesIO(screenshot)).convert('RGB')
                 global shot 
@@ -1141,22 +1144,33 @@ def dynamic():
                 for result in results:
                     label = int(result.boxes.cls)
                     score = result.boxes.conf.item()    
-                    print(score)
-                    print(label)
-                    if score > 0.7:
-                        external_domains = get_external_domains_with_selenium(url)
-                    
+                    if score > 0.5:
                         label_to_string = {v: k for k, v in class_dict.items()}
                         label = label_to_string[label]
-                        domains = len([item for item in external_domains if label in item])
-                        if domains ==0:
-                            predict_dynamic = 'phishing'
+                        global name 
+                        name = label
+                        target_domain = urlparse(driver.current_url).netloc
+                        st.sidebar.write(score)
+                        query = f"{label} {target_domain}"
+                        
+                        domains = list()
+                        for result in search(query): 
+                            domain = urlparse(result).netloc 
+                            st.sidebar.write(i)
+                            domains.append(domain)
+                            if len(domains) == 5:
+                              break
+                        
+                        if target_domain in domains:  
+                          predict_dynamic="legitimate"   
                         else:
-                            predict_dynamic = 'legitimate'                
+                          predict_dynamic="phishing"          
             except:
                 pass
         else:
             pass
+        if predict_dynamic:
+          st.sidebar.write("Predicted dynamic: {predict_dynamic}")
         global dy
         dy = predict_dynamic
         return 
@@ -1541,7 +1555,7 @@ st.markdown(
     /* Căn giữa tiêu đề */
     .centered-title {
         text-align: center;
-        color: MediumSeaGreen;
+        color: Blue;
     }
     </style>
     """,
@@ -1569,36 +1583,31 @@ def Option():
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--disable-gpu")
     options.add_argument("--private")
-    options.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0")
-    options.set_preference("dom.webdriver.enabled", False)
-    options.set_preference('useAutomationExtension', False)  
-    options.set_preference("privacy.trackingprotection.enabled", False) 
     
     return webdriver.Firefox(options=options)
 driver = Option()
-driver.set_page_load_timeout(10)
 
 
 @st.cache_resource
 def Model_Dynamic():
-    model_dynamic = YOLO("streamlit/YOLOv10.pt") 
+    model_dynamic = YOLO("Detect-URL-phishing/streamlit/YOLOv10.pt") 
     return (model_dynamic)
 model_dynamic = Model_Dynamic()
 
 @st.cache_resource
 def Model_Static():
-    model_static = torch.load("streamlit/transformer.pth")
+    model_static = torch.load("Detect-URL-phishing/streamlit/transformer.pth")
     return model_static
 model_static = Model_Static()
 
 if button:
-    url=""
     if source_url=="" :
         st.warning('Please enter a valid website URL.', icon="⚠️")
     else:    
         
         driver.set_page_load_timeout(10)
         try:  
+            
             if source_url.startswith("http"):
                 driver.get(source_url)
                 url=driver.current_url
@@ -1643,7 +1652,7 @@ if button:
         st.warning('Invalid URL', icon="⚠️")
         st.markdown("<div class='centered-Error'>Error</div>", unsafe_allow_html=True)
 
-    elif sta < 0.38:
+    elif sta < 0.35:
         st.markdown(
             """
             <style>
@@ -1667,7 +1676,7 @@ if button:
             """,
             unsafe_allow_html=True
         )
-        st.success('Site is not Blacklisted', icon="✅")
+        st.success('Safe', icon="✅")
         st.markdown("<div class='centered-Legitimate'>Legitimate</div>", unsafe_allow_html=True)
         
     elif sta > 0.75:
@@ -1694,7 +1703,7 @@ if button:
             """,
             unsafe_allow_html=True
         )
-        st.error('Site is Blacklisted', icon="🚨")
+        st.error('Warning', icon="🚨")
         st.markdown("<div class='centered-Phishing'>Phishing</div>", unsafe_allow_html=True)
     elif dy == "legitimate":
             st.markdown(
@@ -1720,7 +1729,7 @@ if button:
                     """,
                     unsafe_allow_html=True
                 )
-            st.success('Site is not Blacklisted', icon="✅")
+            st.success('Safe', icon="✅")
             st.markdown("<div class='centered-Legitimate'>Legitimate</div>", unsafe_allow_html=True)
     elif dy == "phishing":
         st.markdown(
@@ -1746,7 +1755,7 @@ if button:
             """,
             unsafe_allow_html=True
         )
-        st.error('Site is Blacklisted', icon="🚨")
+        st.error('Warning', icon="🚨")
         st.markdown("<div class='centered-Phishing'>Phishing</div>", unsafe_allow_html=True)
             
 
@@ -1775,7 +1784,7 @@ if button:
                 """,
                 unsafe_allow_html=True
             )
-            st.error('Site is Blacklisted', icon="🚨")
+            st.error('Warning', icon="🚨")
             st.markdown("<div class='centered-Phishing'>Phishing</div>", unsafe_allow_html=True)
         else:
             st.markdown(
@@ -1801,10 +1810,10 @@ if button:
                     """,
                     unsafe_allow_html=True
                 )
-            st.success('Site is not Blacklisted', icon="✅")
+            st.success('Safe', icon="✅")
             st.markdown("<div class='centered-Legitimate'>Legitimate</div>", unsafe_allow_html=True)
     try:
         # Hiển thị hình ảnh ở giữa
-        st.image(shot, use_container_width  = "always",caption = url)
+        st.image(shot, use_container_width  = "always",caption = predict_dynamic)
     except:
         pass
