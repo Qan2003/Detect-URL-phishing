@@ -1135,6 +1135,7 @@ def dynamic():
         predict_dynamic=""
         if state:
             try:
+                time.sleep(0.5)
                 screenshot = driver.get_screenshot_as_png()
                 image = Image.open(BytesIO(screenshot)).convert('RGB')
                 global shot 
@@ -1150,27 +1151,29 @@ def dynamic():
                         global name 
                         name = label
                         target_domain = urlparse(driver.current_url).netloc
-                        st.sidebar.write(score)
+                        st.sidebar.write(f"Logo score: {score}")
                         query = f"{label} {target_domain}"
                         
                         domains = list()
                         for result in search(query): 
                             domain = urlparse(result).netloc 
-                            st.sidebar.write(i)
                             domains.append(domain)
                             if len(domains) == 5:
                               break
                         
                         if target_domain in domains:  
-                          predict_dynamic="legitimate"   
+                          predict_dynamic="legitimate"
+                          break   
                         else:
-                          predict_dynamic="phishing"          
+                          predict_dynamic="phishing"  
+                          break        
             except:
                 pass
         else:
             pass
         if predict_dynamic:
-          st.sidebar.write("Predicted dynamic: {predict_dynamic}")
+          st.markdown(f"<h1 class='centered-title'>Logo:  {name}   </h1>", unsafe_allow_html=True)
+          st.sidebar.write(f"Logo status:  {predict_dynamic}")
         global dy
         dy = predict_dynamic
         return 
@@ -1814,6 +1817,7 @@ if button:
             st.markdown("<div class='centered-Legitimate'>Legitimate</div>", unsafe_allow_html=True)
     try:
         # Hiển thị hình ảnh ở giữa
-        st.image(shot, use_container_width  = "always",caption = predict_dynamic)
+        st.image(shot, use_container_width  = "always")
+        
     except:
         pass
