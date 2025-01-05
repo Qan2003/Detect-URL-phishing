@@ -9,3 +9,4 @@ ultralytics==8.3.29
 beautifulsoup4
 selenium
 googlesearch-python
+opencv-python
