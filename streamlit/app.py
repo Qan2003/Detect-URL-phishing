@@ -1577,11 +1577,11 @@ with col2:
     st.write("")
     button = st.button("Scan Website")
 
-@st.cache_resource
+#@st.cache_resource
 def Option():
     options = Options()
     options.add_argument("--window-size=1400,700")
-    options.add_argument("--headless")
+    #options.add_argument("--headless")
     #options.add_argument('--no-sandbox')
     #options.add_argument('--disable-dev-shm-usage')
     #options.add_argument("--disable-gpu")
