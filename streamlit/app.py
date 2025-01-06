@@ -29,7 +29,7 @@ from urllib.parse import urlparse
 st.sidebar.title("Thông tin chi tiết")
 HINTS = ['wp', 'login', 'includes', 'admin', 'content', 'site', 'images', 'js', 'alibaba', 'css', 'myaccount', 'dropbox', 'themes', 'plugins', 'signin', 'view']
 
-allbrand_txt = open("/workspaces/Detect-URL-phishing/streamlit/allbrands.txt", "r")
+allbrand_txt = open("streamlit/allbrands.txt", "r")
 
 def __txt_to_list(txt_object):
     list = []
@@ -1593,13 +1593,13 @@ driver = Option()
 
 @st.cache_resource
 def Model_Dynamic():
-    model_dynamic = YOLO("/workspaces/Detect-URL-phishing/streamlit/YOLOv10.pt") 
+    model_dynamic = YOLO("streamlit/YOLOv10.pt") 
     return (model_dynamic)
 model_dynamic = Model_Dynamic()
 
 @st.cache_resource
 def Model_Static():
-    model_static = torch.load("/workspaces/Detect-URL-phishing/streamlit/transformer2.pth")
+    model_static = torch.load("streamlit/transformer2.pth")
     return model_static
 model_static = Model_Static()
 
