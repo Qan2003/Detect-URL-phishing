@@ -29,7 +29,7 @@ from urllib.parse import urlparse
 st.sidebar.title("Thông tin chi tiết")
 HINTS = ['wp', 'login', 'includes', 'admin', 'content', 'site', 'images', 'js', 'alibaba', 'css', 'myaccount', 'dropbox', 'themes', 'plugins', 'signin', 'view']
 
-allbrand_txt = open("streamlit/allbrands.txt", "r")
+allbrand_txt = open("/workspaces/Detect-URL-phishing/streamlit/allbrands.txt", "r")
 
 def __txt_to_list(txt_object):
     list = []
@@ -1577,29 +1577,29 @@ with col2:
     st.write("")
     button = st.button("Scan Website")
 
-#@st.cache_resource
+@st.cache_resource
 def Option():
     options = Options()
+    options.add_argument("--headless")
     options.add_argument("--window-size=1400,700")
-    #options.add_argument("--headless")
-    #options.add_argument('--no-sandbox')
-    #options.add_argument('--disable-dev-shm-usage')
-    #options.add_argument("--disable-gpu")
-    #options.add_argument("--private")
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--disable-gpu")
+    options.add_argument("--private")
     
     return webdriver.Firefox(options=options)
-driver = Option()
 
+driver = Option()
 
 @st.cache_resource
 def Model_Dynamic():
-    model_dynamic = YOLO("streamlit/YOLOv10.pt") 
+    model_dynamic = YOLO("/workspaces/Detect-URL-phishing/streamlit/YOLOv10.pt") 
     return (model_dynamic)
 model_dynamic = Model_Dynamic()
 
 @st.cache_resource
 def Model_Static():
-    model_static = torch.load("streamlit/transformer.pth")
+    model_static = torch.load("/workspaces/Detect-URL-phishing/streamlit/transformer2.pth")
     return model_static
 model_static = Model_Static()
 
@@ -1627,7 +1627,9 @@ if button:
                 state = False     
         static()
         dynamic()
-            
+        
+        
+        
     if state==False:
         st.markdown(
                     """
