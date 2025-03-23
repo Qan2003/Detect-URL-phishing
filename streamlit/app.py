@@ -1577,19 +1577,19 @@ with col2:
     st.write("")
     button = st.button("Scan Website")
 
-#@st.cache_resource
+@st.cache_resource
 def Option():
     options = Options()
+    options.add_argument("--headless")
     options.add_argument("--window-size=1400,700")
-    #options.add_argument("--headless")
-    #options.add_argument('--no-sandbox')
-    #options.add_argument('--disable-dev-shm-usage')
-    #options.add_argument("--disable-gpu")
-    #options.add_argument("--private")
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--disable-gpu")
+    options.add_argument("--private")
     
     return webdriver.Firefox(options=options)
-driver = Option()
 
+driver = Option()
 
 @st.cache_resource
 def Model_Dynamic():
@@ -1599,7 +1599,7 @@ model_dynamic = Model_Dynamic()
 
 @st.cache_resource
 def Model_Static():
-    model_static = torch.load("streamlit/transformer.pth")
+    model_static = torch.load("streamlit/transformer2.pth")
     return model_static
 model_static = Model_Static()
 
@@ -1627,7 +1627,9 @@ if button:
                 state = False     
         static()
         dynamic()
-            
+        
+        
+        
     if state==False:
         st.markdown(
                     """
